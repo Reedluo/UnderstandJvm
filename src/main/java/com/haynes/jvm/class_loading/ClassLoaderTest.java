@@ -1,0 +1,29 @@
+package com.haynes.jvm.class_loading;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+public class ClassLoaderTest {
+    public static void main(java.lang.String[] args) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        ClassLoader myLoader = new ClassLoader() {
+            @Override
+            public Class<?> loadClass(java.lang.String name) throws ClassNotFoundException {
+                try {
+                    java.lang.String fileName = name.substring(name.lastIndexOf('.') + 1) + ".class";
+                    InputStream is = getClass().getResourceAsStream(fileName);
+                    if (is == null) {
+                        return super.loadClass(name);
+                    }
+                    byte[] b = new byte[is.available()];
+                    is.read(b);
+                    return defineClass(name, b, 0, b.length);
+                } catch (IOException e) {
+                    throw new ClassNotFoundException();
+                }
+            }
+        };
+        Object obj = myLoader.loadClass("com.haynes.jvm.class_loading.ClassLoaderTest").newInstance();
+        System.out.println(obj.getClass());
+        System.out.println(obj instanceof com.haynes.jvm.class_loading.ClassLoaderTest);
+    }
+}
